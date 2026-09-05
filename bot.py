@@ -31,11 +31,11 @@ def handle_message(message):
     
     try:
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-3.6-flash',
             contents=user_text,
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())],
-                system_instruction="ذكاء اصطناعي محترف، أجب بلغة واضحة ودقيقة."
+                system_instruction="أنت مساعد ذكي ومحترف، أجب بلغة واضحة ودقيقة."
             )
         )
         reply_text = response.text
