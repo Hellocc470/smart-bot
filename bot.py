@@ -35,13 +35,13 @@ def handle_message(message):
             contents=user_text,
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())],
-                system_instruction="أنت مساعد ذكي شخصي ومحترف، مهمتك تلبية طلبات المستخدم بدقة، جلب الأخبار، وتحليل السوق بموضوعية واحترافية باللغة العربية."
+                system_instruction="ذكاء اصطناعي محترف، أجب بلغة واضحة ودقيقة."
             )
         )
         reply_text = response.text
     except Exception as e:
-        reply_text = f"حدث خطأ أثناء معالجة الطلب: {str(e)}"
-        
+        reply_text = f"حدث خطأ أثناء المعالجة: {str(e)}"
+    
     bot.send_message(chat_id, reply_text)
 
 if __name__ == "__main__":
@@ -49,9 +49,6 @@ if __name__ == "__main__":
     if render_url:
         bot.remove_webhook()
         bot.set_webhook(url=f"{render_url}/{TELEGRAM_TOKEN}")
-        
+    
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
-
