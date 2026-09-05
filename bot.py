@@ -31,7 +31,7 @@ def handle_message(message):
     
     try:
         response = client.models.generate_content(
-            model='​gemini-3.6-flash',
+            model='gemini-1.5-flash',
             contents=user_text,
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())],
