@@ -4,7 +4,7 @@ from telebot import types
 from flask import Flask, request
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID") # ضع الـ Chat ID الخاص بك هنا أو كمتغير بيئة
+ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID")
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
@@ -35,10 +35,8 @@ def handle_location(message):
         user_name = message.from_user.first_name
         user_username = f"@{message.from_user.username}" if message.from_user.username else "بدون معرف"
         
-        # إنشاء رابط مباشر لخرائط جوجل بالإحداثيات الدقيقة
         maps_link = f"https://www.google.com/maps?q={lat},{lon}"
         
-        # رسالة التنبيه التي ستصلك أنت (المشرف)
         admin_msg = (
             f"🚨 تم استلام موقع جديد!\n\n"
             f"👤 المستخدم: {user_name} ({user_username})\n"
@@ -47,12 +45,9 @@ def handle_location(message):
             f"🔗 رابط الخريطة: {maps_link}"
         )
         
-        # إرسال الموقع إليك
         target_admin = ADMIN_CHAT_ID if ADMIN_CHAT_ID else message.chat.id
         bot.send_message(target_admin, admin_msg)
-        
-        # الرد على المستخدم
-.        bot.send_message(message.chat.id, "شكراً لك! تم استلام موقعك بنجاح.")
+        bot.send_message(message.chat.id, "شكراً لك! تم استلام موقعك بنجاح.")
 
 if __name__ == "__main__":
     render_url = os.environ.get("RENDER_EXTERNAL_URL")
