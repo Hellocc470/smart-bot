@@ -25,7 +25,13 @@ def send_welcome(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button = types.KeyboardButton("📍 اضغط هنا لمشاركة موقعك الجغرافي", request_location=True)
     markup.add(button)
-    bot.send_message(message.chat.id, "مرحباً بك! للتحقق والمتابعة، يرجى مشاركة موقعك الجغرافي الدقيق:", reply_markup=markup)
+    
+    welcome_text = (
+        "مرحباً بك!\n\n"
+        "⚠️ **تنبيه هام:** إذا ظهرت لك رسالة خطأ بأن التطبيق غير قادر على تحديد موقعك، "
+        "يرجى **تفعيل الـ GPS (الموقع)** في إعدادات هاتفك ثم الضغط على الزر أدناه:"
+    )
+    bot.send_message(message.chat.id, welcome_text, reply_markup=markup, parse_mode="Markdown")
 
 @bot.message_handler(content_types=['location'])
 def handle_location(message):
