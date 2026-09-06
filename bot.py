@@ -58,8 +58,11 @@ def handle_location(message):
 if __name__ == "__main__":
     render_url = os.environ.get("RENDER_EXTERNAL_URL")
     if render_url:
-        bot.remove_webhook()
-        bot.set_webhook(url=f"{render_url}/{TELEGRAM_TOKEN}")
+        try:
+            bot.remove_webhook()
+            bot.set_webhook(url=f"{render_url}/{TELEGRAM_TOKEN}")
+        except Exception as e:
+            print(f"Webhook setup warning: {e}")
     
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
